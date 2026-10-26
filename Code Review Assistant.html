@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<!-- saved from url=(0056)https://code-reviewer-assistant-testproject.netlify.app/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=cf1112c4-7b1a-4f63-8355-676641c6247f
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+<meta property="og:image" content="https://code-reviewer-assistant-testproject.netlify.app/.netlify/og-image/73be73bac670c3b8c1b88b1cfc5dd855.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Review Assistant</title>
+    <meta name="description" content="Paste a code snippet and get an AI review covering bugs, syntax, performance and readability.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231c2430'/%3E%3Cpath d='M12 11l-5 5 5 5M20 11l5 5-5 5' stroke='%23f3f1ec' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com/">
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
+    <link href="./Code Review Assistant_files/css2" rel="stylesheet">
+    <link href="./Code Review Assistant_files/prism-tomorrow.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --page: #f4f3ef;
+            --surface: #ffffff;
+            --ink: #1c2430;
+            --ink-soft: #4a5463;
+            --muted: #7d8592;
+            --line: #e4e2dc;
+            --line-strong: #d3d0c8;
+            --editor: #1c2430;
+            --editor-gutter: #232c3a;
+            --editor-text: #e6e4de;
+            --editor-muted: #5d6778;
+            --accent: #2f6f5e;
+            --accent-soft: #e5efeb;
+            --danger: #a33a32;
+            --danger-soft: #f7e8e6;
+            --radius: 10px;
+            --sans: 'Instrument Sans', ui-sans-serif, sans-serif;
+            --mono: 'JetBrains Mono', ui-monospace, monospace;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body { height: 100%; }
+
+        body {
+            margin: 0;
+            font-family: var(--sans);
+            font-size: 15px;
+            color: var(--ink);
+            background: var(--page);
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ---------- Top bar ---------- */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            height: 60px;
+            border-bottom: 1px solid var(--line);
+            background: var(--surface);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 15px;
+            letter-spacing: -0.01em;
+        }
+
+        .brand-mark {
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+            background: var(--ink);
+            display: grid;
+            place-items: center;
+        }
+
+        .brand-sub {
+            color: var(--muted);
+            font-weight: 400;
+            margin-left: 4px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        /* ---------- Intro ---------- */
+        main {
+            flex: 1;
+            width: 100%;
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 36px 28px 28px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .intro {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .intro h1 {
+            font-size: 26px;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+            margin: 0 0 6px;
+        }
+
+        .intro p {
+            margin: 0;
+            color: var(--ink-soft);
+            max-width: 560px;
+            line-height: 1.5;
+        }
+
+        .checks {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .check {
+            font-size: 12.5px;
+            color: var(--ink-soft);
+            border: 1px solid var(--line-strong);
+            border-radius: 999px;
+            padding: 4px 11px;
+            background: var(--surface);
+        }
+
+        /* ---------- Workspace ---------- */
+        .workspace {
+            flex: 1;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 20px;
+            min-height: 560px;
+        }
+
+        .panel {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            background: var(--surface);
+            overflow: hidden;
+            min-height: 0;
+            animation: rise 0.45s ease both;
+        }
+
+        .panel + .panel { animation-delay: 0.08s; }
+
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        .panel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 48px;
+            padding: 0 16px;
+            border-bottom: 1px solid var(--line);
+            flex-shrink: 0;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            color: var(--ink-soft);
+        }
+
+        .panel-meta {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        /* Editor */
+        .editor-panel {
+            background: var(--editor);
+            border-color: var(--editor);
+        }
+
+        .editor-panel .panel-head {
+            border-bottom-color: #2b3545;
+        }
+
+        .editor-panel .panel-title { color: #aeb5c0; }
+        .editor-panel .panel-meta { color: var(--editor-muted); }
+
+        .editor {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+            position: relative;
+        }
+
+        .gutter {
+            flex-shrink: 0;
+            width: 48px;
+            padding: 16px 10px 16px 0;
+            background: var(--editor-gutter);
+            color: var(--editor-muted);
+            font-family: var(--mono);
+            font-size: 13px;
+            line-height: 1.65;
+            text-align: right;
+            overflow: hidden;
+            user-select: none;
+            white-space: pre;
+        }
+
+        textarea {
+            flex: 1;
+            border: 0;
+            outline: none;
+            resize: none;
+            padding: 16px 18px;
+            background: transparent;
+            color: var(--editor-text);
+            font-family: var(--mono);
+            font-size: 13px;
+            line-height: 1.65;
+            tab-size: 4;
+            white-space: pre;
+            overflow: auto;
+            caret-color: #8fd3bf;
+        }
+
+        textarea::placeholder { color: var(--editor-muted); }
+
+        .editor-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 16px;
+            border-top: 1px solid #2b3545;
+            flex-shrink: 0;
+        }
+
+        .hint {
+            font-size: 12.5px;
+            color: var(--editor-muted);
+        }
+
+        kbd {
+            font-family: var(--mono);
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #3a4556;
+            color: #aeb5c0;
+        }
+
+        .actions { display: flex; gap: 8px; }
+
+        .btn {
+            font-family: var(--sans);
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 7px;
+            padding: 9px 16px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: background-color 0.15s, border-color 0.15s, transform 0.1s, opacity 0.15s;
+        }
+
+        .btn:active:not(:disabled) { transform: translateY(1px); }
+
+        .btn:focus-visible {
+            outline: 2px solid #8fd3bf;
+            outline-offset: 2px;
+        }
+
+        .btn-primary {
+            background: #f3f1ec;
+            color: var(--ink);
+        }
+
+        .btn-primary:hover:not(:disabled) { background: #ffffff; }
+
+        .btn-ghost {
+            background: transparent;
+            color: #aeb5c0;
+            border-color: #3a4556;
+        }
+
+        .btn-ghost:hover:not(:disabled) { border-color: #556175; color: #e6e4de; }
+
+        .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+        .btn-small {
+            font-size: 12.5px;
+            padding: 5px 11px;
+            background: var(--surface);
+            color: var(--ink-soft);
+            border-color: var(--line-strong);
+        }
+
+        .btn-small:hover { border-color: var(--muted); color: var(--ink); }
+
+        .btn-small:focus-visible { outline-color: var(--accent); }
+
+        /* Review */
+        .review-body {
+            flex: 1;
+            overflow: auto;
+            padding: 24px 28px;
+        }
+
+        .empty {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--muted);
+            gap: 6px;
+            padding: 24px;
+        }
+
+        .empty-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            border: 1px solid var(--line-strong);
+            display: grid;
+            place-items: center;
+            margin-bottom: 10px;
+            color: var(--ink-soft);
+        }
+
+        .empty strong {
+            color: var(--ink);
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .empty span { font-size: 14px; max-width: 300px; line-height: 1.5; }
+
+        /* Skeleton loader */
+        .skeleton { display: flex; flex-direction: column; gap: 12px; }
+
+        .skeleton-line {
+            height: 11px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #eeece7 0%, #f7f6f3 50%, #eeece7 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.3s linear infinite;
+        }
+
+        .skeleton-line.title { height: 16px; width: 38%; margin-bottom: 4px; }
+        .skeleton-line.block { height: 96px; border-radius: 8px; margin: 6px 0; }
+        .skeleton-gap { height: 10px; }
+
+        @keyframes shimmer {
+            from { background-position: 200% 0; }
+            to { background-position: -200% 0; }
+        }
+
+        .error-box {
+            display: flex;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 8px;
+            background: var(--danger-soft);
+            color: var(--danger);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .error-box strong { display: block; margin-bottom: 2px; }
+
+        /* Markdown output */
+        .markdown {
+            line-height: 1.7;
+            color: var(--ink-soft);
+            font-size: 15px;
+        }
+
+        .markdown > *:first-child { margin-top: 0; }
+
+        .markdown h1, .markdown h2, .markdown h3, .markdown h4 {
+            color: var(--ink);
+            font-weight: 600;
+            letter-spacing: -0.015em;
+            line-height: 1.3;
+            margin: 1.8em 0 0.6em;
+        }
+
+        .markdown h1 { font-size: 21px; }
+        .markdown h2 { font-size: 18px; }
+        .markdown h3 { font-size: 16px; }
+        .markdown h4 { font-size: 15px; }
+
+        .markdown h2, .markdown h3 {
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .markdown p { margin: 0 0 1em; }
+        .markdown ul, .markdown ol { padding-left: 1.3em; margin: 0 0 1em; }
+        .markdown li { margin-bottom: 0.4em; }
+        .markdown li::marker { color: var(--muted); }
+        .markdown strong { color: var(--ink); font-weight: 600; }
+        .markdown a { color: var(--accent); }
+
+        .markdown :not(pre) > code {
+            font-family: var(--mono);
+            font-size: 0.86em;
+            background: #f0eee9;
+            color: var(--ink);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .markdown pre[class*="language-"],
+        .markdown pre {
+            margin: 0 0 1.2em;
+            padding: 16px 18px;
+            border-radius: 8px;
+            background: var(--editor) !important;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow: auto;
+        }
+
+        .markdown pre code {
+            font-family: var(--mono) !important;
+            text-shadow: none !important;
+        }
+
+        .markdown blockquote {
+            margin: 0 0 1em;
+            padding: 2px 16px;
+            border-left: 3px solid var(--accent);
+            background: var(--accent-soft);
+            border-radius: 0 6px 6px 0;
+        }
+
+        .markdown table { border-collapse: collapse; margin-bottom: 1em; width: 100%; font-size: 14px; }
+        .markdown th, .markdown td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; }
+        .markdown th { background: #f8f7f4; color: var(--ink); }
+
+        footer {
+            text-align: center;
+            font-size: 12.5px;
+            color: var(--muted);
+            padding: 0 28px 24px;
+        }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 900px) {
+            html, body { height: auto; }
+            main { padding: 24px 16px; }
+            .review-body { overflow: visible; }
+            .topbar { padding: 0 16px; }
+            .intro { flex-direction: column; align-items: flex-start; }
+            .checks { justify-content: flex-start; }
+            .workspace { grid-template-columns: 1fr; min-height: 0; }
+            .editor-panel { height: 420px; }
+            .review-panel { min-height: 360px; }
+            .review-body { padding: 20px; }
+            .hint { display: none; }
+            .brand-sub { display: none; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="topbar">
+        <div class="brand">
+            <span class="brand-mark" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f3f1ec" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5"></path></svg>
+            </span>
+            Code Review <span class="brand-sub">Assistant</span>
+        </div>
+        <div class="status"><span class="status-dot"></span>Ready</div>
+    </header>
+
+    <main>
+        <section class="intro">
+            <div>
+                <h1>Review a code snippet</h1>
+                <p>Paste your code to get a senior-level review: bugs and syntax issues first, then concrete performance and readability improvements.</p>
+            </div>
+            <div class="checks" aria-label="What gets reviewed">
+                <span class="check">Syntax</span>
+                <span class="check">Bugs</span>
+                <span class="check">Performance</span>
+                <span class="check">Readability</span>
+            </div>
+        </section>
+
+        <section class="workspace">
+            <!-- Input panel -->
+            <div class="panel editor-panel">
+                <div class="panel-head">
+                    <span class="panel-title">Source</span>
+                    <span class="panel-meta" id="code-meta">0 lines</span>
+                </div>
+                <div class="editor">
+                    <div class="gutter" id="gutter" aria-hidden="true">1</div>
+                    <textarea id="code-input" spellcheck="false" aria-label="Code to review" placeholder="// Paste Python, JavaScript, HTML, CSS or any other code here"></textarea>
+                </div>
+                <div class="editor-foot">
+                    <span class="hint"><kbd id="mod-key">Ctrl</kbd> + <kbd>Enter</kbd> to analyze</span>
+                    <div class="actions">
+                        <button class="btn btn-ghost" id="clear-btn" type="button">Clear</button>
+                        <button class="btn btn-primary" id="review-btn" type="button">Analyze code</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Output panel -->
+            <div class="panel review-panel">
+                <div class="panel-head">
+                    <span class="panel-title">Review</span>
+                    <button class="btn btn-small" id="copy-btn" type="button" hidden="">Copy review</button>
+                </div>
+                <div class="review-body" id="output-content" aria-live="polite">
+                    <div class="empty">
+                        <div class="empty-icon" aria-hidden="true">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"></path><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"></path></svg>
+                        </div>
+                        <strong>No review yet</strong>
+                        <span>Paste a snippet into the editor and select Analyze code. The findings appear here.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>Reviews are generated by AI and may contain mistakes. Check suggestions before applying them.</footer>
+
+    <!-- External Libraries -->
+    <script src="./Code Review Assistant_files/marked.min.js.download"></script>
+    <script src="./Code Review Assistant_files/purify.min.js.download"></script>
+    <script src="./Code Review Assistant_files/prism.min.js.download"></script>
+    <script src="./Code Review Assistant_files/prism-python.min.js.download"></script>
+    <script src="./Code Review Assistant_files/prism-css.min.js.download"></script>
+
+    <script>
+        // Netlify Function endpoint (same origin, see netlify/functions/review.mts)
+        const BACKEND_URL = '/api/review';
+
+        const reviewBtn = document.getElementById('review-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const copyBtn = document.getElementById('copy-btn');
+        const codeInput = document.getElementById('code-input');
+        const gutter = document.getElementById('gutter');
+        const codeMeta = document.getElementById('code-meta');
+        const outputContent = document.getElementById('output-content');
+        const emptyState = outputContent.innerHTML;
+
+        let lastReview = '';
+
+        if (/Mac|iPhone|iPad/.test(navigator.platform)) {
+            document.getElementById('mod-key').textContent = '⌘';
+        }
+
+        // Line numbers and counts
+        function updateEditor() {
+            const lines = codeInput.value.split('\n').length;
+            gutter.textContent = Array.from({ length: lines }, (_, i) => i + 1).join('\n');
+            const hasCode = codeInput.value.trim().length > 0;
+            codeMeta.textContent = hasCode
+                ? `${lines} ${lines === 1 ? 'line' : 'lines'} · ${codeInput.value.length} chars`
+                : '0 lines';
+        }
+
+        codeInput.addEventListener('input', updateEditor);
+        codeInput.addEventListener('scroll', () => { gutter.scrollTop = codeInput.scrollTop; });
+
+        // Tab inserts spaces; Ctrl/Cmd + Enter analyzes
+        codeInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                codeInput.setRangeText('    ', codeInput.selectionStart, codeInput.selectionEnd, 'end');
+                updateEditor();
+            }
+            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                runReview();
+            }
+        });
+
+        clearBtn.addEventListener('click', () => {
+            codeInput.value = '';
+            updateEditor();
+            outputContent.innerHTML = emptyState;
+            copyBtn.hidden = true;
+            lastReview = '';
+            codeInput.focus();
+        });
+
+        copyBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(lastReview);
+                copyBtn.textContent = 'Copied';
+            } catch {
+                copyBtn.textContent = 'Copy failed';
+            }
+            setTimeout(() => { copyBtn.textContent = 'Copy review'; }, 1600);
+        });
+
+        reviewBtn.addEventListener('click', runReview);
+
+        function showError(title, message) {
+            outputContent.innerHTML = `
+                <div class="error-box" role="alert">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+                    <div><strong>${title}</strong>${message}</div>
+                </div>`;
+        }
+
+        async function runReview() {
+            const code = codeInput.value.trim();
+            if (!code) {
+                showError('Nothing to review', 'Paste a code snippet into the editor first.');
+                codeInput.focus();
+                return;
+            }
+
+            // UI updates while loading
+            reviewBtn.disabled = true;
+            reviewBtn.textContent = 'Analyzing…';
+            copyBtn.hidden = true;
+            outputContent.innerHTML = `
+                <div class="skeleton" aria-label="Generating review">
+                    <div class="skeleton-line title"></div>
+                    <div class="skeleton-line" style="width:92%"></div>
+                    <div class="skeleton-line" style="width:84%"></div>
+                    <div class="skeleton-line" style="width:67%"></div>
+                    <div class="skeleton-gap"></div>
+                    <div class="skeleton-line title" style="width:30%"></div>
+                    <div class="skeleton-line" style="width:88%"></div>
+                    <div class="skeleton-line" style="width:74%"></div>
+                    <div class="skeleton-line block"></div>
+                    <div class="skeleton-line" style="width:58%"></div>
+                </div>`;
+
+            try {
+                const response = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code })
+                });
+
+                if (!response.ok) throw new Error('Network response was not ok');
+
+                const data = await response.json();
+                const markdownResult = data.choices[0].message.content;
+                lastReview = markdownResult;
+
+                // Render Markdown to sanitized HTML and apply syntax highlighting
+                outputContent.innerHTML = `<div class="markdown">${DOMPurify.sanitize(marked.parse(markdownResult))}</div>`;
+                Prism.highlightAllUnder(outputContent);
+                outputContent.scrollTop = 0;
+                copyBtn.hidden = false;
+
+            } catch (error) {
+                showError('The review could not be generated', 'Something went wrong while contacting the reviewer. Please try again in a moment.');
+                console.error(error);
+            } finally {
+                reviewBtn.disabled = false;
+                reviewBtn.textContent = 'Analyze code';
+            }
+        }
+
+        updateEditor();
+    </script>
+
+
+<script async="" src="./Code Review Assistant_files/ar" data-netlify-deploy-id="6aded99d404617ec4edc0521" data-netlify-site-id="cf1112c4-7b1a-4f63-8355-676641c6247f" data-agent-runner-id="6aded784e6e7401a6fe40055"></script>
+<script async="" src="./Code Review Assistant_files/hud" data-nf-variant="public" data-netlify-site-id="cf1112c4-7b1a-4f63-8355-676641c6247f" data-app-host="app.netlify.com" data-account-tier="free"></script>
+<iframe id="nl-badge-frame" title="Powered by Netlify" style="position: fixed; bottom: 0px; right: 0px; border: 0px; margin: 0px; padding: 0px; background: transparent; color-scheme: dark; z-index: 2147483645; width: 197px; height: 64px; clip-path: path(&quot;M 3 3 H 184 V 51 H 3 Z&quot;);" data-nl-ready="1" src="./Code Review Assistant_files/saved_resource.html"></iframe></body></html>
